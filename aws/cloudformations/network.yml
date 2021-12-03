@@ -1,0 +1,240 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Network resource template for Larecs
+Resources:
+  # VPCの設定
+  LarecsVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: LarecsVPC
+
+  # サブネットの設定
+  sbcntrSubnetPrivateContainer1A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.8.0/24
+      VpcId:
+        Ref: LarecsVPC
+      AvailabilityZone: "ap-northeast-1a"
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: sbcntr-subnet-private-container-1a
+        - Key: Type
+          Value: Isolated
+  ## コンテナアプリ用のルートテーブル
+  sbcntrRouteApp:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: LarecsVPC
+      Tags:
+        - Key: Name
+          Value: sbcntr-route-app
+  ## コンテナサブネットへルート紐付け
+  sbcntrRouteAppAssociation1A:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: sbcntrRouteApp
+      SubnetId:
+        Ref: sbcntrSubnetPrivateContainer1A
+  # Ingress周りの設定
+  ## Ingress用のパブリックサブネット
+  sbcntrSubnetPublicIngress1A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      VpcId:
+        Ref: LarecsVPC
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: sbcntr-subnet-public-ingress-1a
+        - Key: Type
+          Value: Public
+  ## Ingress用のルートテーブル
+  sbcntrRouteIngress:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: LarecsVPC
+      Tags:
+        - Key: Name
+          Value: sbcntr-route-ingress
+  ## Ingressサブネットへルート紐付け
+  sbcntrRouteIngressAssociation1A:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: sbcntrRouteIngress
+      SubnetId:
+        Ref: sbcntrSubnetPublicIngress1A
+  ## Ingress用ルートテーブルのデフォルトルート
+  sbcntrRouteIngressDefault:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: sbcntrRouteIngress
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: sbcntrIgw
+    DependsOn:
+      - LarecsVPCgwAttachment
+
+  # 管理用サーバ周りの設定
+  ## 管理用のパブリックサブネット
+  sbcntrSubnetPublicManagement1A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.240.0/24
+      VpcId:
+        Ref: LarecsVPC
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: sbcntr-subnet-public-management-1a
+        - Key: Type
+          Value: Public
+  ## 管理用サブネットのルートはIngressと同様として作成する
+  sbcntrRouteManagementAssociation1A:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: sbcntrRouteIngress
+      SubnetId:
+        Ref: sbcntrSubnetPublicManagement1A
+  # インターネットへ通信するためのゲートウェイの作成
+  sbcntrIgw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: sbcntr-igw
+  LarecsVPCgwAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: LarecsVPC
+      InternetGatewayId:
+        Ref: sbcntrIgw
+
+  ############### Security groups ###############
+  # セキュリティグループの生成
+  ## インターネット公開のセキュリティグループの生成
+  sbcntrSgIngress:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for ingress
+      GroupName: ingress
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: from 0.0.0.0/0:80
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+        - CidrIpv6: ::/0
+          Description: from ::/0:80
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      Tags:
+        - Key: Name
+          Value: sbcntr-sg-ingress
+      VpcId:
+        Ref: LarecsVPC
+  ## 管理用サーバ向けのセキュリティグループの生成
+  sbcntrSgManagement:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group of management server
+      GroupName: management
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      Tags:
+        - Key: Name
+          Value: sbcntr-sg-management
+      VpcId:
+        Ref: LarecsVPC
+  ## バックエンドコンテナアプリ用セキュリティグループの生成
+  sbcntrSgContainer:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group of backend app
+      GroupName: container
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      Tags:
+        - Key: Name
+          Value: sbcntr-sg-container
+      VpcId:
+        Ref: LarecsVPC
+  ## 内部用ロードバランサ用のセキュリティグループの生成
+  sbcntrSgInternal:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for internal load balancer
+      GroupName: internal
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      Tags:
+        - Key: Name
+          Value: sbcntr-sg-internal
+      VpcId:
+        Ref: LarecsVPC
+  # ルール紐付け
+  ## Internal LB -> Back Container
+  sbcntrSgContainerFromSgInternal:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      Description: HTTP for internal lb
+      FromPort: 80
+      GroupId:
+        Fn::GetAtt:
+          - sbcntrSgContainer
+          - GroupId
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+          - sbcntrSgInternal
+          - GroupId
+      ToPort: 80      
+  ## Management server -> Internal LB
+  sbcntrSgInternalFromSgManagementTCP:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      Description: HTTP for management server
+      FromPort: 80
+      GroupId:
+        Fn::GetAtt:
+          - sbcntrSgInternal
+          - GroupId
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+          - sbcntrSgManagement
+          - GroupId
+      ToPort: 80
