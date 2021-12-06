@@ -2,10 +2,13 @@
 ECSでLaravelをホストするための検証用プロジェクト
 
 ## 手順
+### Github Actionsで使用するIAMユーザーを作成
+`AmazonEC2ContainerRegistryPowerUser`と以下のポリシーを付与。
+- https://github.com/aws-actions/amazon-ecs-deploy-task-definition#permissions
+
 ### ECR上にprivateレポジトリを作成
 
-### Github ActionsからECRへイメージをpushする用のIAMユーザーを作成
-policyはAmazonEC2ContainerRegistryPowerUserを付与。
+### ECSクラスターとサービスを作成
 
 ## Github Secrets
 **AWS_ACCESS_KEY_ID**: ECRにpushする用のIAMユーザーのAccess key ID
