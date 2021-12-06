@@ -2,7 +2,8 @@ name: Build Docker Image and Push to ECR
 
 on:
   push:
-    main
+    branches:
+      - main
 
 jobs:
   say-hello:
