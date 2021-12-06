@@ -36,3 +36,10 @@ jobs:
           task-definition: aws/ecs/task-def-dev-larecs-api.json
           container-name: api
           image: ${{ steps.build-image.outputs.image_uri }}
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: dev-larecs-service-api
+          cluster: dev-larecs-cluster
+          wait-for-service-stability: true
