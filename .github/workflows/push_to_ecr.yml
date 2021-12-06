@@ -42,4 +42,3 @@ jobs:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: dev-larecs-service-api
           cluster: dev-larecs-cluster
-          wait-for-service-stability: true
