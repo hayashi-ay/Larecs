@@ -1,0 +1,11 @@
+name: Build Docker Image and Push to ECR
+
+on:
+  push:
+    main
+
+jobs:
+  say-hello:
+  runs-on: ubuntu-latest
+  steps:
+    - run: echo "hello"
