@@ -8,5 +8,6 @@ ECSでLaravelをホストするための検証用プロジェクト
 policyはAmazonEC2ContainerRegistryPowerUserを付与。
 
 ## Github Secrets
-**AWS_ACCESS_KEY_ID**: ECRにpushするようのIAMユーザーのAccess key ID
+**AWS_ACCESS_KEY_ID**: ECRにpushする用のIAMユーザーのAccess key ID
+
 **AWS_SECRET_ACCESS_KEY** ECRにpushする用のIAMユーザーのSecret access key
