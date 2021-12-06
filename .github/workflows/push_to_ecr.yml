@@ -5,7 +5,11 @@ on:
     branches:
       - main
 jobs:
-  say-hello:
+  build-and-push:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - run: echo "hello"
+      - uses: actions/checkout@v2
+      - name: Build
+        run: |
+        docker build -f docker/develop/php/Dockerfile .
