@@ -10,4 +10,4 @@ RUN apt-get update -y \
 
 WORKDIR /var/www
 
-EXPOSE 7777
+EXPOSE 9000

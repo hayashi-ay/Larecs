@@ -5,15 +5,35 @@
     "networkMode": "awsvpc",
     "containerDefinitions": [
       {
-        "name": "api",
-        "image": "",
+        "name": "nginx",
+        "image": "647283695438.dkr.ecr.ap-northeast-1.amazonaws.com/dev-larecs-nginx:latest",
+        "essential": true,
         "portMappings": [
           {
+            "hostPort": 80,
             "protocol": "tcp",
-            "containerPort": 80,
-            "hostPort": 80
+            "containerPort": 80
           }
         ],
+        "dependsOn": [
+          {
+            "containerName": "laravel",
+            "condition": "START"
+          }
+        ],
+        "readonlyRootFilesystem": false,
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "/ecs/giho/prd/api",
+            "awslogs-region": "ap-northeast-1",
+            "awslogs-stream-prefix": "api"
+          }
+        }
+      },
+      {
+        "name": "laravel",
+        "image": "",
         "essential": true,
         "dependsOn": null,
         "readonlyRootFilesystem": false,
