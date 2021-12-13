@@ -12,4 +12,6 @@ RUN apt-get update -y \
 
 RUN composer install
 
+RUN chown -R www-data:www-data storage
+
 EXPOSE 9000
