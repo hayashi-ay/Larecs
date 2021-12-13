@@ -14,3 +14,10 @@ ECSでLaravelをホストするための検証用プロジェクト
 **AWS_ACCESS_KEY_ID**: ECRにpushする用のIAMユーザーのAccess key ID
 
 **AWS_SECRET_ACCESS_KEY** ECRにpushする用のIAMユーザーのSecret access key
+
+## Cloud Formationに反映していない作業
+public subnetにNAT Gatewayを置いてprivate subnetのルートテーブルの0.0.0.0/0に当該のNATを指定。。ECRなどのリージョンサービスにアクセスする必要があるから。
+
+ターゲットグループ作成 -> ALB作成 -> ECSのサービスという作成順序っぽい。
+ALBを作成する際は、subnetを2つ以上指定しろと怒られた。multi-AZ構成を前提としているみたい。
+ということで別のregionにpublicサブネットを追加。

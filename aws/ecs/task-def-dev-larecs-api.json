@@ -25,9 +25,9 @@
         "logConfiguration": {
           "logDriver": "awslogs",
           "options": {
-            "awslogs-group": "/ecs/giho/prd/api",
+            "awslogs-group": "/ecs/dev-larecs-api",
             "awslogs-region": "ap-northeast-1",
-            "awslogs-stream-prefix": "api"
+            "awslogs-stream-prefix": "ecs"
           }
         }
       },
