@@ -37,6 +37,12 @@
         "essential": true,
         "dependsOn": null,
         "readonlyRootFilesystem": false,
+        "secrets": [
+          {
+            "name": "APP_KEY",
+            "valueFrom": "/larecs/dev/app_key"
+          }
+        ],
         "logConfiguration": {
           "logDriver": "awslogs",
           "secretOptions": null,
