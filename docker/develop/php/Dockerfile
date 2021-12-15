@@ -14,4 +14,4 @@ RUN composer install
 
 RUN chown -R www-data:www-data storage
 
-EXPOSE 8999
+EXPOSE 9000
