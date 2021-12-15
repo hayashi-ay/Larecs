@@ -5,10 +5,8 @@ on:
     branches:
       - main
     paths:
-      - api/**
-      - docker/develop/php/Dockerfile
-      - docker/develop/php/php.ini
-      - aws/ecs/task-def-dev-larecs-api.json
+      - docker/develop/nginx/Dockerfile
+      - docker/develop/nginx/default.conf
 
 jobs:
   build-and-push:
@@ -29,19 +27,12 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev-larecs-api
-          IMAGE_TAG: ${{ github.sha }}
+          ECR_REPOSITORY: dev-larecs-nginx
+          IMAGE_TAG: latest
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/develop/php/Dockerfile .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image_uri::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-      - name: Fill in the new image uri in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: aws/ecs/task-def-dev-larecs-api.json
-          container-name: laravel
-          image: ${{ steps.build-image.outputs.image_uri }}
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
