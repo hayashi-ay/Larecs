@@ -1,0 +1,22 @@
+name: Update ECS Service
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-ecs-service:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+      - name: Update ECS Service
+        env:
+          CLUSTER_NAME: dev-larecs-cluster
+          SERVICE_NAME: dev-larecs-service-api
+        run: |
+          aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
