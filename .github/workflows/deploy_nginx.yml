@@ -1,12 +1,6 @@
-name: Build Docker Image and Push to ECR
+name: Deploy Nginx Image And Update ECS Service
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - docker/develop/nginx/Dockerfile
-      - docker/develop/nginx/default.conf
   workflow_dispatch:
 
 jobs:
