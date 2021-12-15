@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - api/**
+      - docker/develop/php/php.ini
+      - aws/ecs/task-def-dev-larecs-api.json
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
