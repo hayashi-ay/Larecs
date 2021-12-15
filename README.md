@@ -21,3 +21,5 @@ public subnetにNAT Gatewayを置いてprivate subnetのルートテーブルの
 ターゲットグループ作成 -> ALB作成 -> ECSのサービスという作成順序っぽい。
 ALBを作成する際は、subnetを2つ以上指定しろと怒られた。multi-AZ構成を前提としているみたい。
 ということで別のregionにpublicサブネットを追加。
+
+タスク実行ロールからパラメータストアを参照する必要があるので、executionRoleにSystem MangerとKMSのロールを付与。
